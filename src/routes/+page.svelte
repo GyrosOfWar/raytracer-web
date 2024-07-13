@@ -1,12 +1,21 @@
 <script lang="ts">
-	import { setupContext, clearScreen } from '$lib';
+	import { clamp, clearScreen, overflow, setupContext, type Color } from '$lib';
+	import PathTracer from '$lib/pathtracer';
 	import { onMount } from 'svelte';
 
 	let canvasElement: HTMLCanvasElement;
 
 	onMount(async () => {
-		let context = await setupContext(canvasElement);
-		clearScreen(context, { r: 0.6, g: 0.6, b: 0.99, a: 1.0 });
+		const context = await setupContext(canvasElement);
+		const renderer = new PathTracer(context);
+		function frame() {
+			let texture = context.context.getCurrentTexture();
+			let target = texture.createView();
+			renderer.renderFrame(target);
+			requestAnimationFrame(frame);
+		}
+
+		requestAnimationFrame(frame);
 	});
 </script>
 

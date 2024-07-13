@@ -38,24 +38,38 @@ export async function setupContext(canvasElement: HTMLCanvasElement) {
 	};
 }
 
-export function clearScreen(context: Context, color: Color) {
-	const pass = context.encoder.beginRenderPass({
+export function clearScreen({ device, context }: Context, color: Color) {
+	const encoder = device.createCommandEncoder();
+	const pass = encoder.beginRenderPass({
 		colorAttachments: [
 			{
-				view: context.context.getCurrentTexture().createView(),
+				view: context.getCurrentTexture().createView(),
 				loadOp: 'clear',
 				clearValue: color,
 				storeOp: 'store'
 			}
 		]
 	});
-
 	pass.end();
-	context.device.queue.submit([context.encoder.finish()]);
+	device.queue.submit([encoder.finish()]);
 }
 
-function compileShaderModule(device: GPUDevice, code: string): GPUShaderModule {
-	return device.createShaderModule({
-		code
-	});
+export function clamp(n: number, min: number, max: number): number {
+	if (n < min) {
+		return min;
+	} else if (n > max) {
+		return max;
+	} else {
+		return n;
+	}
+}
+
+export function overflow(n: number, start: number, end: number): number {
+	if (n > start) {
+		return start;
+	} else if (n < end) {
+		return end;
+	} else {
+		return n;
+	}
 }
