@@ -4,13 +4,6 @@ export interface Context {
   context: GPUCanvasContext;
 }
 
-export interface Color {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
-
 export async function setupContext(canvasElement: HTMLCanvasElement) {
   if (!navigator.gpu) {
     throw new Error("unsuppoted browser, sorry");
@@ -36,40 +29,4 @@ export async function setupContext(canvasElement: HTMLCanvasElement) {
     encoder,
     context,
   };
-}
-
-export function clearScreen({ device, context }: Context, color: Color) {
-  const encoder = device.createCommandEncoder();
-  const pass = encoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: context.getCurrentTexture().createView(),
-        loadOp: "clear",
-        clearValue: color,
-        storeOp: "store",
-      },
-    ],
-  });
-  pass.end();
-  device.queue.submit([encoder.finish()]);
-}
-
-export function clamp(n: number, min: number, max: number): number {
-  if (n < min) {
-    return min;
-  } else if (n > max) {
-    return max;
-  } else {
-    return n;
-  }
-}
-
-export function overflow(n: number, start: number, end: number): number {
-  if (n > start) {
-    return start;
-  } else if (n < end) {
-    return end;
-  } else {
-    return n;
-  }
 }

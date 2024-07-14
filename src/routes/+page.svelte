@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { clamp, clearScreen, overflow, setupContext, type Color } from "$lib";
+  import { setupContext } from "$lib";
   import PathTracer from "$lib/pathtracer";
   import { onMount } from "svelte";
 
   let canvasElement: HTMLCanvasElement;
   let error: GPUUncapturedErrorEvent | undefined;
+  let frameCount = 0;
 
   onMount(async () => {
     const context = await setupContext(canvasElement);
@@ -17,6 +18,7 @@
       let texture = context.context.getCurrentTexture();
       let target = texture.createView();
       renderer.renderFrame(target);
+      frameCount += 1;
       if (!error) {
         requestAnimationFrame(frame);
       }
@@ -33,4 +35,5 @@
   </p>
 {:else}
   <canvas width="1280" height="800" bind:this={canvasElement}></canvas>
+  <p>Frames rendered: {frameCount}</p>
 {/if}
