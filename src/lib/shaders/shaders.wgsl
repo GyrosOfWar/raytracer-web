@@ -23,24 +23,63 @@ struct Scatter {
   ray: Ray,
 }
 
-fn scatter(input_ray: Ray, hit: Intersection) -> Scatter {
-    let output_ray = Ray(point_on_ray(input_ray, hit.t), hit.normal);
-    let attenuation = vec3(0.8);
+fn random_range(min: f32, max: f32) -> f32 {
+    return min + (max - min) * rand_f32();
+}
+
+fn random_vec_range(min: f32, max: f32) -> vec3f {
+    return vec3f(
+        random_range(min, max),
+        random_range(min, max),
+        random_range(min, max)
+    );
+}
+
+
+fn random_unit_sphere() -> vec3f {
+    while true {
+        let p = random_vec_range(-1.0, 1.0);
+        if dot(p, p) < 1.0 {
+            return p;
+        }
+    }
+
+    return vec3f(0., 1., 0.);
+}
+
+fn random_unit_vector() -> vec3f {
+    return normalize(random_unit_sphere());
+}
+
+fn random_on_hemisphere(normal: vec3f) -> vec3f {
+    let p = random_unit_sphere();
+
+    return select(p, -p, dot(p, normal) > 0.0);
+}
+
+fn scatter(input_ray: Ray, hit: Intersection, color: vec3f) -> Scatter {
+    let hit_point = point_on_ray(input_ray, hit.t);
+    let direction = hit.normal + random_unit_vector();
+
+    let output_ray = Ray(hit_point, direction);
+    let attenuation = color;
     return Scatter(attenuation, output_ray);
 }
 
 struct Sphere {
     center: vec3f,
     radius: f32,
+    color: vec3f,
 }
 
 struct Intersection {
     normal: vec3f,
     t: f32,
+    color: vec3f,
 }
 
 fn no_intersection() -> Intersection {
-    return Intersection(vec3(0.), -1.);
+    return Intersection(vec3(0.), -1., vec3(0.));
 }
 
 fn is_intersection_valid(hit: Intersection) -> bool {
@@ -48,7 +87,7 @@ fn is_intersection_valid(hit: Intersection) -> bool {
 }
 
 fn intersect_scene(ray: Ray) -> Intersection {
-    var closest_hit = Intersection(vec3(0.), FLT_MAX);
+    var closest_hit = Intersection(vec3(0.), FLT_MAX, vec3(0.));
     for (var i = 0u; i < OBJECT_COUNT; i += 1u) {
         let sphere = scene[i];
         let hit = intersect_sphere(ray, sphere);
@@ -138,8 +177,8 @@ fn sky_color(ray: Ray) -> vec3f {
 
 alias Scene = array<Sphere, OBJECT_COUNT>;
 var<private> scene: Scene = Scene(
-    Sphere(vec3(0., 0., -1.), 0.5),
-    Sphere(vec3(0., -100.5, -1.), 100.),
+    Sphere(vec3(0., 0., -1.), 0.5, vec3f(1.0, 0.1, 0.1)),
+    Sphere(vec3(0., -100.5, -1.), 100., vec3f(0.5, 0.5, 0.5)),
 );
 
 fn intersect_sphere(ray: Ray, sphere: Sphere) -> Intersection {
@@ -165,7 +204,7 @@ fn intersect_sphere(ray: Ray, sphere: Sphere) -> Intersection {
 
     let p = point_on_ray(ray, t);
     let N = (p - sphere.center) / sphere.radius;
-    return Intersection(N, t);
+    return Intersection(N, t, sphere.color);
 }
 
 @fragment 
@@ -191,7 +230,7 @@ fn display_fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
     while path_length < MAX_PATH_LENGTH {
         let hit = intersect_scene(ray);
         if is_intersection_valid(hit) {
-            let scattered = scatter(ray, hit);
+            let scattered = scatter(ray, hit, hit.color);
             throughput *= scattered.attenuation;
             ray = scattered.ray;
         } else {

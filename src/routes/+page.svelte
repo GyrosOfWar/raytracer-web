@@ -13,14 +13,16 @@
   onMount(async () => {
     const context = await setupContext(canvasElement);
     context.device.onuncapturederror = (e) => {
+      console.error(e);
       error = e;
     };
 
     const renderer = new PathTracer(context, width, height);
     function frame() {
-      let texture = context.context.getCurrentTexture();
-      let target = texture.createView();
+      const texture = context.context.getCurrentTexture();
+      const target = texture.createView();
       renderer.renderFrame(target);
+
       frameCount += 1;
       if (!error) {
         requestAnimationFrame(frame);
@@ -37,9 +39,7 @@
 
 <h1>Raytracer</h1>
 {#if error}
-  <p>
-    {error.error.message}
-  </p>
+  <pre>{error.error.message}</pre>
 {:else}
   <canvas {width} {height} bind:this={canvasElement}></canvas>
   <p>Frames rendered: {frameCount}</p>
