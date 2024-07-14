@@ -10,6 +10,7 @@ function compileShaderModule(device: GPUDevice, code: string): GPUShaderModule {
 
 function createDisplayPipeline(device: GPUDevice, shaderModule: GPUShaderModule) {
   const bindGroupLayout = device.createBindGroupLayout({
+    label: "bind group layout",
     entries: [
       {
         binding: 0,
@@ -23,7 +24,7 @@ function createDisplayPipeline(device: GPUDevice, shaderModule: GPUShaderModule)
         binding: 1,
         visibility: GPUShaderStage.FRAGMENT,
         texture: {
-          sampleType: "float",
+          sampleType: "unfilterable-float",
           multisampled: false,
           viewDimension: "2d",
         },
@@ -100,6 +101,7 @@ function createDisplayBindGroups(
 
   return [
     device.createBindGroup({
+      label: "bind group 1",
       layout,
       entries: [
         {
@@ -115,6 +117,7 @@ function createDisplayBindGroups(
     }),
 
     device.createBindGroup({
+      label: "bind group 2",
       layout,
       entries: [
         {
@@ -140,10 +143,6 @@ export default class PathTracer {
   #radianceSamples: GPUTexture[];
 
   constructor(context: Context, width: number, height: number) {
-    context.device.onuncapturederror = (error) => {
-      console.error(error);
-    };
-
     const shaderModule = compileShaderModule(context.device, shaderCode);
     const { displayPipeline, bindGroupLayout } = createDisplayPipeline(
       context.device,
