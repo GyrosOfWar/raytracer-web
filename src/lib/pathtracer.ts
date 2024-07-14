@@ -142,6 +142,8 @@ export default class PathTracer {
   #displayBindGroups: GPUBindGroup[];
   #radianceSamples: GPUTexture[];
 
+  zPosition: number;
+
   constructor(context: Context, width: number, height: number) {
     const shaderModule = compileShaderModule(context.device, shaderCode);
     const { displayPipeline, bindGroupLayout } = createDisplayPipeline(
@@ -149,14 +151,14 @@ export default class PathTracer {
       shaderModule,
     );
 
+    this.zPosition = 0.0;
     this.#context = context;
     this.#displayPipeline = displayPipeline;
-    this.#uniforms = new Uint32Array([width, height, 0]);
+    this.#uniforms = new Uint32Array([width, height, 0, this.zPosition]);
     this.#radianceSamples = createSampleTextures(context.device, width, height);
     this.#uniformsBuffer = context.device.createBuffer({
       label: "uniforms",
-      // 3 * u32 (4 bytes)
-      size: 3 * 4,
+      size: 4 * 4,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       mappedAtCreation: false,
     });

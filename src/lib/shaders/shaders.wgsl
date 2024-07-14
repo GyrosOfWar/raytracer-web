@@ -7,6 +7,7 @@ struct Uniforms {
     width: u32,
     height: u32,
     frame_count: u32,
+    camera_z: f32,
 }
 
 struct Ray {
@@ -37,11 +38,13 @@ fn random_vec_range(min: f32, max: f32) -> vec3f {
 
 
 fn random_unit_sphere() -> vec3f {
-    while true {
+    var num_attempts = 0
+    while num_attempts < 50 {
         let p = random_vec_range(-1.0, 1.0);
         if dot(p, p) < 1.0 {
             return p;
         }
+        num_attempts += 1;
     }
 
     return vec3f(0., 1., 0.);
@@ -171,14 +174,15 @@ fn display_vs(@builtin(vertex_index) vid: u32) -> @builtin(position) vec4f {
 }
 
 fn sky_color(ray: Ray) -> vec3f {
-    let t = 0.5 * (normalize(ray.direction).y + 1.);
-    return (1. - t) * vec3(1.) + t * vec3(0.3, 0.5, 1.);
+    // let t = 0.5 * (normalize(ray.direction).y + 1.);
+    // return (1. - t) * vec3(1.) + t * vec3(0.3, 0.5, 1.);
+    return vec3(1.0);
 }
 
 alias Scene = array<Sphere, OBJECT_COUNT>;
 var<private> scene: Scene = Scene(
     Sphere(vec3(0., 0., -1.), 0.5, vec3f(1.0, 0.1, 0.1)),
-    Sphere(vec3(0., -100.5, -1.), 100., vec3f(0.5, 0.5, 0.5)),
+    Sphere(vec3(0., -100.5, -1.), 100., vec3f(0.7, 0.7, 0.7)),
 );
 
 fn intersect_sphere(ray: Ray, sphere: Sphere) -> Intersection {
@@ -211,7 +215,7 @@ fn intersect_sphere(ray: Ray, sphere: Sphere) -> Intersection {
 fn display_fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
     init_rng(vec2u(pos.xy));
 
-    let origin = vec3(0.);
+    let origin = vec3(0.0, uniforms.camera_z, 0.0);
     let focus_distance = 1.;
     let aspect_ratio = f32(uniforms.width) / f32(uniforms.height);
 
