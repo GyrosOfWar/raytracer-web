@@ -3,6 +3,9 @@
   import PathTracer from "$lib/pathtracer";
   import { onMount } from "svelte";
 
+  const width = 1280,
+    height = 800;
+
   let canvasElement: HTMLCanvasElement;
   let error: GPUUncapturedErrorEvent | undefined;
   let frameCount = 0;
@@ -13,7 +16,7 @@
       error = e;
     };
 
-    const renderer = new PathTracer(context, 1280, 800);
+    const renderer = new PathTracer(context, width, height);
     function frame() {
       let texture = context.context.getCurrentTexture();
       let target = texture.createView();
@@ -28,12 +31,16 @@
   });
 </script>
 
+<svelte:head>
+  <title>WebGPU Ray Tracing</title>
+</svelte:head>
+
 <h1>Raytracer</h1>
 {#if error}
   <p>
     {error.error.message}
   </p>
 {:else}
-  <canvas width="1280" height="800" bind:this={canvasElement}></canvas>
+  <canvas {width} {height} bind:this={canvasElement}></canvas>
   <p>Frames rendered: {frameCount}</p>
 {/if}
