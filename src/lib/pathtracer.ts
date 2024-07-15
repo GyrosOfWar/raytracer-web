@@ -151,7 +151,7 @@ export default class PathTracer {
       shaderModule,
     );
 
-    this.zPosition = 0.0;
+    this.zPosition = 1.0;
     this.#context = context;
     this.#displayPipeline = displayPipeline;
     this.#uniforms = new Uint32Array([width, height, 0, this.zPosition]);
@@ -173,6 +173,8 @@ export default class PathTracer {
 
   renderFrame(target: GPUTextureView) {
     this.#uniforms[2] += 1;
+    this.#uniforms[3] = this.zPosition;
+    // console.log(this.#uniforms[3]);
 
     this.#context.device.queue.writeBuffer(this.#uniformsBuffer, 0, this.#uniforms);
 

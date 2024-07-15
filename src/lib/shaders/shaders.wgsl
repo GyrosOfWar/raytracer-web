@@ -7,7 +7,7 @@ struct Uniforms {
     width: u32,
     height: u32,
     frame_count: u32,
-    camera_z: f32,
+    camera_z: u32,
 }
 
 struct Ray {
@@ -38,7 +38,7 @@ fn random_vec_range(min: f32, max: f32) -> vec3f {
 
 
 fn random_unit_sphere() -> vec3f {
-    var num_attempts = 0
+    var num_attempts = 0;
     while num_attempts < 50 {
         let p = random_vec_range(-1.0, 1.0);
         if dot(p, p) < 1.0 {
@@ -176,7 +176,7 @@ fn display_vs(@builtin(vertex_index) vid: u32) -> @builtin(position) vec4f {
 fn sky_color(ray: Ray) -> vec3f {
     // let t = 0.5 * (normalize(ray.direction).y + 1.);
     // return (1. - t) * vec3(1.) + t * vec3(0.3, 0.5, 1.);
-    return vec3(1.0);
+    return vec3(0.8);
 }
 
 alias Scene = array<Sphere, OBJECT_COUNT>;
@@ -215,8 +215,8 @@ fn intersect_sphere(ray: Ray, sphere: Sphere) -> Intersection {
 fn display_fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
     init_rng(vec2u(pos.xy));
 
-    let origin = vec3(0.0, uniforms.camera_z, 0.0);
-    let focus_distance = 1.;
+    let origin = vec3(0.0);
+    let focus_distance = f32(uniforms.camera_z);
     let aspect_ratio = f32(uniforms.width) / f32(uniforms.height);
 
     let offset = vec2(rand_f32() - 0.5, rand_f32() - 0.5);

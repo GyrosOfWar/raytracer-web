@@ -9,7 +9,7 @@
   let canvasElement: HTMLCanvasElement;
   let error: GPUUncapturedErrorEvent | undefined;
   let frameCount = 0;
-  let zPosition = 0.0;
+  let zPosition = 1.0;
 
   onMount(async () => {
     const context = await setupContext(canvasElement);
@@ -35,10 +35,9 @@
   });
 
   function handleKeys(event: KeyboardEvent) {
-    console.log(event.key);
-    if (event.key === "W") {
+    if (event.key === "w") {
       zPosition += 0.5;
-    } else if (event.key === "S") {
+    } else if (event.key === "s") {
       zPosition -= 0.5;
     }
   }
@@ -48,10 +47,13 @@
   <title>WebGPU Ray Tracing</title>
 </svelte:head>
 
+<svelte:window on:keydown={handleKeys} />
+
 <h1>Raytracer</h1>
 {#if error}
   <pre>{error.error.message}</pre>
 {:else}
-  <canvas on:keydown={handleKeys} {width} {height} bind:this={canvasElement}></canvas>
+  <canvas {width} {height} bind:this={canvasElement}></canvas>
   <p>Frames rendered: {frameCount}</p>
+  <p>z position: {zPosition}</p>
 {/if}
